@@ -136,15 +136,38 @@ The user interface implements a distinctive, high-contrast palette:
 
 ## 6. Predefined Textbook Benchmarks
 
-DAGOpt includes seven curated benchmark cases accessible via the dropdown menu:
+DAGOpt includes an expanded benchmark suite organized across seven core compiler optimization categories:
 
-1. **Classic Common Subexpression Elimination:** Demonstrates `b + c` reuse across variable assignments `a` and `d`.
-2. **Dragon Book Array Address Calculation:** Demonstrates eliminating duplicate `4 * i` byte-offset calculations in consecutive array lookups.
-3. **Reassignment and Variable Shadowing:** Verifies correct label management when variables `b` and `d` are reassigned inside the block.
-4. **Constant Folding and Propagation Chain:** Demonstrates compiling `x = 10`, `y = 20`, `z = x + y`, `w = z * 2` into a folded constant `60`.
-5. **Algebraic Simplification Identities:** Evaluates identities such as `x + 0`, `y * 1`, `z * 0`, and `w - w`.
-6. **Dead Code Elimination:** Identifies instructions producing values unread by any live variable and prunes them from the DAG.
-7. **Complex Symmetrical Tree:** Compiles `(a + b) * (c + d)` computed twice into a shared symmetrical graph.
+### 6.1 Common Subexpression Elimination (CSE)
+- **Classic CSE (Aho & Ullman):** Standard `b + c` deduplication across separate variable definitions.
+- **Commutative Value Numbering:** Proves `b + c` and `c + b` map to an identical DAG node due to commutativity canonicalization.
+- **Multi-Level Nested Subexpressions:** Demonstrates sharing at both base `(a + b)` and composite `((a + b) + c)` expression levels.
+- **Complex Symmetrical Tree:** Compiles `(a + b) * (c + d)` computed twice into a single compact symmetrical graph.
+
+### 6.2 Array Addressing & Memory Operations
+- **Dragon Book Array Address Calculation:** Eliminates duplicate `4 * i` byte-offset calculations in consecutive array indexing statements (`a[t1]` and `b[t3]`).
+- **2D Matrix Row-Major Indexing:** Evaluates row-major offset calculations (`row * cols + col`) reused across matrix reads.
+- **Array Store Invalidation (Side Effect Safety):** Verifies that writing to `a[i]` updates the array state version, preventing unsafe stale reads of `a[i]`.
+
+### 6.3 Variable Reassignment & Shadowing
+- **Variable Reassignment & Shadowing:** Verifies correct label management and detachment when variables `b` and `d` are reassigned inside the block.
+- **In-Place Accumulator Pattern:** Models iterative straight-line accumulator updates (`x = x + 1`, `x = x * 2`), illustrating dynamic label transfers.
+
+### 6.4 Constant Folding & Propagation
+- **Constant Folding & Propagation Chain:** Propagates known constants (`x = 10`, `y = 20`) to fold `10 + 20 = 30` and `30 * 2 = 60` at compile time.
+- **Buffer & Header Allocation Math:** Evaluates static allocation math (`64 + 8 = 72`, `72 * 4 = 288`) ahead of runtime payload addition.
+
+### 6.5 Algebraic Identities & Simplification
+- **Arithmetic Simplification Identities:** Evaluates identities such as `x + 0 => x`, `y * 1 => y`, `z * 0 => 0`, `w - w => 0`, and `k / 1 => k`.
+- **Bitwise & Logical Identities:** Simplifies bitwise expressions (`x & 0 => 0`, `x | 0 => x`, `x & x => x`, `x | x => x`).
+- **Zero Multiplication Cascade:** Demonstrates how multiplying complex subtrees by zero collapses them directly into constant zero.
+
+### 6.6 Dead Code Elimination (DCE)
+- **Dead Intermediate Computations:** Prunes calculations (`dead_val`, `unused`) unconsumed by downstream live variables.
+- **Entire Dead Subtree Pruning:** Prunes an entire multi-level branch (`t1 -> t2 -> t3`) when its root produces no live output.
+
+### 6.7 Control Flow & Multi-Block Partitioning
+- **Control Flow Basic Block Partitioning:** Automatically detects leaders and splits jump instructions (`if ... goto`, `goto`, `label:`) into distinct basic blocks (`B1`, `B2`, `B3`).
 
 ---
 

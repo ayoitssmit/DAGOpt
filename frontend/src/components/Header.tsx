@@ -47,12 +47,18 @@ export const Header: React.FC<HeaderProps> = ({
           title="Select a predefined textbook compiler example"
         >
           <option value="" disabled>
-            📚 Load Textbook Example...
+            Load Textbook Example...
           </option>
-          {presets.map((p) => (
-            <option key={p.id} value={p.id}>
-              [{p.category}] {p.title}
-            </option>
+          {Array.from(new Set(presets.map((p) => p.category))).map((category) => (
+            <optgroup key={category} label={category}>
+              {presets
+                .filter((p) => p.category === category)
+                .map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title}
+                  </option>
+                ))}
+            </optgroup>
           ))}
         </select>
 
